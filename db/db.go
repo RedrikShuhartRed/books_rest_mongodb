@@ -13,6 +13,7 @@ import (
 )
 
 var dbs *mongo.Database
+var clientDb *mongo.Client
 
 func ConnectDb() {
 	ctx := context.Background()
@@ -20,11 +21,11 @@ func ConnectDb() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func() {
-		if err := client.Disconnect(ctx); err != nil {
-			log.Fatal(err)
-		}
-	}()
+	// defer func() {
+	// 	if err := client.Disconnect(ctx); err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// }()
 
 	data, err := os.ReadFile("D:/project/rest_api_mongodb/final-db.json")
 	if err != nil {
@@ -46,10 +47,11 @@ func ConnectDb() {
 		}
 	}
 	dbs = db
+	clientDb = client
 	fmt.Println("Данные добавлены в коллекцию")
 
 }
 
-func GetDB() *mongo.Database {
-	return dbs
+func GetDB() (*mongo.Database, *mongo.Client) {
+	return dbs, clientDb
 }
