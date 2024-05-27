@@ -1,0 +1,14 @@
+{
+    "title": "Forrest Gump",
+    "director": "Robert Zemeckis",
+    "year": 1994, 
+    "genres": ["drama", "romance"],
+    "rating": 8.8,
+    "duration": {
+      "hours": 2,
+      "minutes": 22
+    },
+    "reviews": [
+      { "name": "Jack", "text": "I like it!" }
+    ]
+  }

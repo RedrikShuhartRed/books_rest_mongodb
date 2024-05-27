@@ -52,6 +52,6 @@ func ConnectDb() {
 
 }
 
-func GetDB() (*mongo.Database, *mongo.Client) {
-	return dbs, clientDb
+func GetDB() *mongo.Client {
+	return clientDb
 }

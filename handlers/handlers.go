@@ -3,54 +3,70 @@ package handlers
 import (
 	"context"
 	"log"
+	"net/http"
 
+	"github.com/RedrikShuhartRed/books_rest_mongodb/db"
 	"github.com/RedrikShuhartRed/books_rest_mongodb/models"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var Get gin.HandlerFunc
-
-func GetAll(client *mongo.Client) ([]models.Movie, error) {
+func GetAll(c *gin.Context) {
 	ctx := context.Background()
-	db := client.Database("moviebox")
-	collection := db.Collection("movies")
+	client := db.GetDB()
+	collection := client.Database("moviebox").Collection("movies")
 	cursor, err := collection.Find(ctx, bson.D{})
 	if err != nil {
-		log.Println("Ошибка при подключении к коллекции", err)
-		return nil, err
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при подключении к коллекции"})
+		return
 	}
-	var movie models.Movie
+
+	defer cursor.Close(ctx)
+
 	var movies []models.Movie
 	for cursor.Next(ctx) {
-
-		err := cursor.Decode(&movie)
-		if err != nil {
-			log.Println("Ошибка при декодировании документа:", err)
+		var movie models.Movie
+		if err := cursor.Decode(&movie); err != nil {
 			continue
 		}
-
-		// Добавляем только если movie не пустой
 		if movie.Title != "" {
 			movies = append(movies, movie)
 		}
 	}
 
+	c.JSON(http.StatusOK, movies)
+}
+
+func GetMoviesByDirector(c *gin.Context) {
+	ctx := context.Background()
+	client := db.GetDB()
+	collection := client.Database("moviebox").Collection("movies")
+	director := c.Param("director")
+
+	cursor, err := collection.Find(ctx, bson.M{"director": director})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при получении данных из коллекции"})
+		log.Println("Ошибка при получении данных из коллекции:", err)
+		return
+	}
+
+	var movies []models.Movie
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var movie models.Movie
+		if err := cursor.Decode(&movie); err != nil {
+			log.Println("Ошибка при декодировании документа:", err)
+			continue
+		}
+
+		movies = append(movies, movie)
+	}
+
 	if err := cursor.Err(); err != nil {
-		log.Fatal(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при чтении данных из коллекции"})
+		log.Println("Ошибка при чтении данных из коллекции:", err)
+		return
 	}
 
-	if err := cursor.Close(ctx); err != nil {
-		log.Fatal(err)
-	}
-
-	//fmt.Println(movies)
-
-	// Get = func(c *gin.Context) {
-	// 	c.JSON(http.StatusOK, gin.H{
-	// 		"movies": movies,
-	// 	})
-	// }
-	return movies, nil
+	c.JSON(http.StatusOK, movies)
 }
