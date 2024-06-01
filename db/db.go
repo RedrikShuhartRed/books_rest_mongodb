@@ -11,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// var dbs *mongo.Database
 var clientDb *mongo.Client
 
 func ConnectDb() *mongo.Client {
@@ -31,16 +30,16 @@ func ConnectDb() *mongo.Client {
 	var movies []models.Movie
 	err = json.Unmarshal(data, &movies)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Ошибка Unmarshal при создании коллекции: %s\n", err)
 	}
 
 	for _, film := range movies {
 		_, err := collection.InsertOne(ctx, film)
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("Ошибка InsertOne при создании коллекции: %s\n", err)
 		}
 	}
-	//dbs = db
+
 	clientDb = client
 	return clientDb
 
