@@ -7,5 +7,8 @@ import (
 
 var RegisterMovieRoutes = func(router *gin.Engine) {
 
-	router.Handle("GET", "/movies", handlers.Get)
+	router.GET("/movies", handlers.GetAll)
+	router.GET("/movies/:director", handlers.GetMoviesByDirector)
+	router.POST("/movies/addmovies", handlers.AddMovies)
+	router.GET("/movies/sort/rating", handlers.SortByRating)
 }

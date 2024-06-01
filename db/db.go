@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 
@@ -12,24 +11,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var dbs *mongo.Database
+// var dbs *mongo.Database
 var clientDb *mongo.Client
 
-func ConnectDb() {
+func ConnectDb() *mongo.Client {
 	ctx := context.Background()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Ошибка подключения к БД: %s\n", err)
 	}
-	// defer func() {
-	// 	if err := client.Disconnect(ctx); err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// }()
 
 	data, err := os.ReadFile("D:/project/rest_api_mongodb/final-db.json")
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Ошибка чтения файла: %s\n", err)
 	}
 
 	db := client.Database("moviebox")
@@ -46,12 +40,17 @@ func ConnectDb() {
 			log.Fatal(err)
 		}
 	}
-	dbs = db
+	//dbs = db
 	clientDb = client
-	fmt.Println("Данные добавлены в коллекцию")
+	return clientDb
 
 }
 
 func GetDB() *mongo.Client {
 	return clientDb
+}
+
+func CloseDb(client *mongo.Client) {
+	ctx := context.Background()
+	client.Disconnect(ctx)
 }
